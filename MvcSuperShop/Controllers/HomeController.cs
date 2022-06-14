@@ -26,7 +26,7 @@ namespace MvcSuperShop.Controllers
         {
             var model = new HomeIndexViewModel
             {
-                TrendingCategories = _mapper.Map<List<CategoryViewModel>>(_categoryService.GetTrendingCategories(3)),
+                TrendingCategories = _mapper.Map<List<CategoryViewModel>>(_categoryService.GetTrendingCategories(3).Categories),
                 NewProducts = _mapper.Map<List<ProductBoxViewModel>>(_productService.GetNewProducts(10, GetCurrentCustomerContext()))
             };
             return View(model);

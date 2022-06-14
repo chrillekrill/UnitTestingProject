@@ -4,5 +4,20 @@ namespace MvcSuperShop.Services;
 
 public interface ICategoryService
 {
-    IEnumerable<Category> GetTrendingCategories(int cnt);
+    CategoriesToReturn GetTrendingCategories(int cnt);
+}
+
+public class CategoriesToReturn
+{
+    public IEnumerable<Category> Categories { get; set; }
+    public ReturnStatus status { get; set; }
+
+}
+
+public enum ReturnStatus
+{
+    Ok,
+    NotEnoughCategories,
+    SomethingElseWentWrong,
+    NoCategoriesExists
 }
