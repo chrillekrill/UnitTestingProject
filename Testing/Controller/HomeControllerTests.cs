@@ -13,7 +13,7 @@ using MvcSuperShop.ViewModels;
 namespace Testing.Controller;
 
 [TestClass]
-public class HomeControllerTests
+public class HomeControllerTests : BaseControllerTest
 {
     private HomeController _sut;
     private Mock<ICategoryService> _categoryServiceMock;
@@ -40,26 +40,9 @@ public class HomeControllerTests
     [TestMethod]
     public void Index_should_show_three_categories()
     {
-        var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()),
-            new Claim(ClaimTypes.Email, "Chrille@chrillescompany.com")
-        }, "TestAuthentication"));
+        _sut.ControllerContext = SetupControllerContext();
 
-        _sut.ControllerContext = new ControllerContext();
-        _sut.ControllerContext.HttpContext = new DefaultHttpContext()
-        {
-            User = user
-        };
-
-        //_categoryServiceMock.Setup(e => e.GetTrendingCategories(3)).Returns(new List<Category>
-        //{
-        //    new Category(),
-        //    new Category(),
-        //    new Category()
-        //});
-
-        _categoryServiceMock.Setup(e => e.GetTrendingCategories(3)).Returns(new CategoriesToReturn
+        _categoryServiceMock.Setup(e => e.GetTrendingCategories(It.IsAny<int>())).Returns(new CategoriesToReturn
         {
             Categories = new List<Category>
             {
@@ -87,18 +70,12 @@ public class HomeControllerTests
     [TestMethod]
     public void Index_should_return_correct_view()
     {
-        var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()),
-            new Claim(ClaimTypes.Email, "Chrille@chrillescompany.com")
-        }, "TestAuthentication"));
 
-        _sut.ControllerContext = new ControllerContext();
-        _sut.ControllerContext.HttpContext = new DefaultHttpContext()
-        {
-            User = user
-        };
+        _sut.ControllerContext = SetupControllerContext();
 
+
+        //Jag vet att du hatar kommentarer, men det kraschar om jag inte mockar den här skiten eftersom jag ändrade i categoryservice
+        //och jag vet inte varför
         _categoryServiceMock.Setup(e => e.GetTrendingCategories(It.IsAny<int>())).Returns(new CategoriesToReturn
         {
             Categories = new List<Category>
@@ -108,7 +85,6 @@ public class HomeControllerTests
                 new Category()
             }
         });
-
         _mapperMock.Setup(m => m.Map<List<CategoryViewModel>>(It.IsAny<List<Category>>()))
             .Returns(new List<CategoryViewModel>
             {
@@ -118,28 +94,17 @@ public class HomeControllerTests
             });
 
         var result = _sut.Index() as ViewResult;
+        var viewName = result.ViewName;
 
-        Assert.IsNull(result.ViewName);
+        Assert.IsTrue(string.IsNullOrEmpty(viewName) || viewName == "Index");
     }
 
-    
 
     [TestMethod]
     public void Index_should_set_new_10_products()
     {
         // ARRANGE
-        var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
-        {
-                new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.Email, "gunnar@somecompany.com")
-            //other required and custom claims
-        }, "TestAuthentication"));
-
-        _sut.ControllerContext = new ControllerContext();
-        _sut.ControllerContext.HttpContext = new DefaultHttpContext()
-        {
-            User = user
-        };
+        _sut.ControllerContext = SetupControllerContext();
 
         var customer = new CurrentCustomerContext
         {

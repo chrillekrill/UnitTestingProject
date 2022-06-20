@@ -24,10 +24,13 @@ namespace MvcSuperShop.Controllers
 
         public IActionResult Index()
         {
+            var currentContext = GetCurrentCustomerContext();
+            var trendingCategories = _categoryService.GetTrendingCategories(3).Categories;
+            var products = _productService.GetNewProducts(10, currentContext);
             var model = new HomeIndexViewModel
             {
-                TrendingCategories = _mapper.Map<List<CategoryViewModel>>(_categoryService.GetTrendingCategories(3).Categories),
-                NewProducts = _mapper.Map<List<ProductBoxViewModel>>(_productService.GetNewProducts(10, GetCurrentCustomerContext()))
+                TrendingCategories = _mapper.Map<List<CategoryViewModel>>(trendingCategories),
+                NewProducts = _mapper.Map<List<ProductBoxViewModel>>(products)
             };
             return View(model);
         }
