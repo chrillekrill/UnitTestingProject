@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using AutoFixture;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -42,23 +43,13 @@ public class HomeControllerTests : BaseControllerTest
     {
         _sut.ControllerContext = SetupControllerContext();
 
-        _categoryServiceMock.Setup(e => e.GetTrendingCategories(It.IsAny<int>())).Returns(new CategoriesToReturn
+        _categoryServiceMock.Setup(e => e.GetTrendingCategories(3)).Returns(new CategoriesToReturn
         {
-            Categories = new List<Category>
-            {
-                new Category(),
-                new Category(),
-                new Category()
-            }
+            Categories = fixture.CreateMany<Category>(3).ToList()
         });
 
-        _mapperMock.Setup(m => m.Map<List<CategoryViewModel>>(It.IsAny<List<Category>>()))
-            .Returns(new List<CategoryViewModel>
-            {
-                new CategoryViewModel(),
-                new CategoryViewModel(),
-                new CategoryViewModel()
-            });
+        _mapperMock.Setup(e => e.Map<List<CategoryViewModel>>(It.IsAny<List<Category>>()))
+            .Returns(fixture.CreateMany<CategoryViewModel>(3).ToList());
 
         var result = _sut.Index() as ViewResult;
 

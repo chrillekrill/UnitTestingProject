@@ -1,12 +1,11 @@
-﻿using Moq;
-using MvcSuperShop.Data;
+﻿using MvcSuperShop.Data;
 using MvcSuperShop.Infrastructure.Context;
 using MvcSuperShop.Services;
 
 namespace Testing.Services;
 
 [TestClass]
-public class PricingServiceTests
+public class PricingServiceTests : BaseTest
 {
     private PricingService _sut;
     public PricingServiceTests()
@@ -22,9 +21,9 @@ public class PricingServiceTests
             Agreements = new List<Agreement>()
         };
 
-        var products = new List<ProductServiceModel>()
+        var products = new List<ProductServiceModel>
         {
-            new ProductServiceModel()
+            new ProductServiceModel
             {
                 BasePrice = 1337
             }
@@ -44,6 +43,8 @@ public class PricingServiceTests
             {
                 new Agreement
                 {
+                    ValidFrom = new DateTime(2020, 05, 10),
+                    ValidTo = new DateTime(2024, 05, 10),
                     AgreementRows = new List<AgreementRow>()
                     {
                         new AgreementRow
@@ -75,11 +76,13 @@ public class PricingServiceTests
     {
         var currentCustomer = new CurrentCustomerContext
         {
-            Agreements = new List<Agreement>()
+            Agreements = new List<Agreement>
             {
                 new Agreement
                 {
-                    AgreementRows = new List<AgreementRow>()
+                    ValidFrom = new DateTime(2020, 05, 10),
+                    ValidTo = new DateTime(2024, 05, 10),
+                    AgreementRows = new List<AgreementRow>
                     {
                         new AgreementRow
                         {
@@ -95,7 +98,9 @@ public class PricingServiceTests
                 },
                 new Agreement
                 {
-                    AgreementRows = new List<AgreementRow>()
+                    ValidFrom = new DateTime(2020, 05, 10),
+                    ValidTo = new DateTime(2024, 05, 10),
+                    AgreementRows = new List<AgreementRow>
                     {
                         new AgreementRow
                         {
@@ -105,8 +110,8 @@ public class PricingServiceTests
                     }
                 }
             }
-            
-            
+
+
 
         };
         var products = new List<ProductServiceModel>()
@@ -116,12 +121,52 @@ public class PricingServiceTests
                 BasePrice = 1000,
                 CategoryName = "van",
                 Name = "Hybrid",
-                
+                ManufacturerName = "BMW"
+
             }
         };
 
         var result = _sut.CalculatePrices(products, currentCustomer);
 
         Assert.AreEqual(950, result.First().Price);
+    }
+
+    [TestMethod]
+    public void When_agreement_validto_is_no_longer_valid_date_use_baseprice()
+    {
+        var currentCustomer = new CurrentCustomerContext
+        {
+            Agreements = new List<Agreement>
+            {
+                new Agreement()
+                {
+                    ValidFrom = new DateTime(2018, 1, 1),
+                    ValidTo = new DateTime(2022, 1, 1),
+                    AgreementRows = new List<AgreementRow>
+                    {
+                        new AgreementRow
+                        {
+                            ManufacturerMatch = "Volvo",
+                            PercentageDiscount = 3
+                        }
+                    }
+                }
+            }
+        };
+
+        var products = new List<ProductServiceModel>()
+        {
+            new ProductServiceModel()
+            {
+                BasePrice = 5000,
+                CategoryName = "van",
+                Name = "Hybrid",
+                ManufacturerName = "Volvo"
+            }
+        };
+
+        var result = _sut.CalculatePrices(products, currentCustomer);
+
+        Assert.AreEqual(5000, result.First().Price);
     }
 }
